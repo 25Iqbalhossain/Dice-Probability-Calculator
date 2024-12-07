@@ -1,28 +1,27 @@
 import streamlit as st
 import plotly.graph_objects as go
 
-# Function to calculate the cumulative probabilities
+
 def cumulative_probabilities(dice_sides, target_number, max_rolls=10, cache={}):
-    # Check if the probability is already in the cache
+   
     if (max_rolls, target_number) in cache:
         return cache[(max_rolls, target_number)]
 
-    # Initialize the probability array
+  
     probabilities = [[0] * (target_number + 2) for _ in range(max_rolls + 1)]  # Adjust array size for +1 case
 
-    # Base case: after 1 roll
     for i in range(1, dice_sides + 1):
         if i <= target_number:
             probabilities[1][i] = 1 / dice_sides
 
-    # Dynamic programming: compute probabilities for 2 to max_rolls rolls
+ 
     for roll in range(2, max_rolls + 1):
         for total in range(1, target_number + 1):
             for face in range(1, dice_sides + 1):
                 if total - face > 0:
                     probabilities[roll][total] += probabilities[roll - 1][total - face] / dice_sides
 
-    # Sum the probabilities for achieving the target in up to max_rolls
+
     win_probability = sum(probabilities[roll][target_number] for roll in range(1, max_rolls + 1))
 
     partial_win_probability = 0
@@ -32,26 +31,26 @@ def cumulative_probabilities(dice_sides, target_number, max_rolls=10, cache={}):
         if 1 <= target_number + 1 < len(probabilities[roll]):
             partial_win_probability += probabilities[roll][target_number + 1]
 
-    # Store the probability in the cache
+  
     cache[(max_rolls, target_number)] = (win_probability, partial_win_probability)
 
     return win_probability, partial_win_probability
 
-# Other functions remain unchanged
+
 def cumulative_probabilities_cdf(dice_sides, target_number, max_rolls=10):
     probabilities = [[0] * (target_number + 1) for _ in range(max_rolls + 1)]
 
-    # Base case: first roll
+   
     for i in range(1, min(dice_sides, target_number) + 1):
         probabilities[1][i] = 1 / dice_sides
 
-    # Dynamic programming: calculate cumulative probabilities
+   
     for roll in range(2, max_rolls + 1):
         for total in range(1, target_number + 1):
             for face in range(1, min(dice_sides, total) + 1):
                 probabilities[roll][total] += probabilities[roll - 1][total - face] / dice_sides
 
-    # Compute CDF values
+    
     cdf = [sum(probabilities[roll][i] for roll in range(1, max_rolls + 1)) for i in range(target_number + 1)]
     return cdf
 
@@ -66,9 +65,9 @@ def plot_cdf_with_plotly(dice_sides, max_target, max_rolls):
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# Streamlit app code is unchanged
 
-# Streamlit session and inputs
+
+
 st.sidebar.title("Dice Probability Calculator")
 
 st.sidebar.number_input("Target number", min_value=1, key="target_number", value=25)
